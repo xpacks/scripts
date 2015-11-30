@@ -23,5 +23,5 @@ do
   startup=$(basename ${f})
   vectors=$(echo ${startup} | sed -e 's/startup/vectors/' -e 's/[.]s/.c/')
   echo "${startup} -> ${vectors}"
-  bash ../scripts.git/convert-arm-asm.sh "${f}" >"$2/${vectors}"
+  bash "$(dirname $0)/convert-arm-asm.sh" "${f}" >"$2/${vectors}"
 done
