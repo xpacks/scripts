@@ -18,7 +18,7 @@ fi
 PROJECT_FOLDER=$(pwd)
 
 # This subfolder will be created in the folder where this script runs.
-TEST_SUBFOLDER="${PROJECT_FOLDER}/build/test"
+TEST_SUBFOLDER="${PROJECT_FOLDER}/build/tests"
 
 # $1 = test name
 # $2 = test folder
@@ -29,7 +29,7 @@ function run_test {
     
     mkdir -p "${TEST_FOLDER}"
     cp $2/* "${TEST_FOLDER}"
-    for f in "${PROJECT_FOLDER}/test/"*.mk
+    for f in "${PROJECT_FOLDER}/test/"*.mk "${PROJECT_FOLDER}/tests/"*.mk
     do
       if [ -f "$f" ]
       then
@@ -52,7 +52,12 @@ then
   run_test "root" "test"
 fi
 
-for f in "test"/*
+if [ -f "${PROJECT_FOLDER}/tests/makefile" ]
+then
+  run_test "top" "tests"
+fi
+
+for f in test/* tests/*
 do
   if [ \( -d "$f" \) -a \( -f "$f/makefile" \) ]
   then
