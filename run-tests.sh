@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # 
-# Copyright (c) 2015 Liviu Ionescu
+# Copyright (c) 2015 Liviu Ionescu.
 # This file is part of the xPacks project (https://xpacks.github.io).
 #
 # Script to run all tests in the current package.
@@ -29,14 +29,19 @@ function run_test {
     
     mkdir -p "${TEST_FOLDER}"
     cp $2/* "${TEST_FOLDER}"
-    cp "${PROJECT_FOLDER}/test/"*.mk "${TEST_FOLDER}"
-
+    for f in "${PROJECT_FOLDER}/test/"*.mk
+    do
+      if [ -f "$f" ]
+      then
+        cp "$f" "${TEST_FOLDER}"
+      fi
+	done
+	
     # If the test folder has a 'makefile', run it.
     make --directory="${TEST_FOLDER}" PARENT="${PROJECT_FOLDER}" TEST_NAME="$1" all
   
     echo
     echo "Testing \"$1\" done."
-
 }
 
 # Clean all previous tests.
