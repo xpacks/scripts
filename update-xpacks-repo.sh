@@ -4,21 +4,13 @@ IFS=$'\n\t'
 
 # Until the XCDL utility will be functional, use this Bash script
 # to update the xPacks repository.
-# At the first run, the `xpack` branch is cloned into the local folder.
-# Subsequent runs pull the latest commit from the current branch.
+
+# During the first run, the repositories will be cloned into the local folder.
+# Subsequent runs will pull the latest commits.
 
 # Prefer the environment location XPACKS_FOLDER, if defined,
 # but default to '.xpacks'.
-set +u
-if [[ -n "${XPACKS_FOLDER}" ]] && [[ -d "${XPACKS_FOLDER}" ]]
-then
-  xpacks_repo_folder="${XPACKS_FOLDER}"
-else
-  # As with other repositories, the default location for the xPacks
-  # repository is a hidden folder in the user home.
-  xpacks_repo_folder="$HOME/.xpacks"
-fi
-set -u
+xpacks_repo_folder="${XPACKS_FOLDER:-$HOME/.xpacks}"
 
 # Update a single Git, or clone at first run.
 # $1 = absolute folder.
@@ -49,8 +41,10 @@ do_update_xpacks() {
 
 if [ ! -d "${xpacks_repo_folder}" ]
 then
-  echo "Creating ${xpacks_repo_folder}"
+  echo "Creating ${xpacks_repo_folder}..."
   mkdir -p "${xpacks_repo_folder}"
+else
+  echo "Using ${xpacks_repo_folder}..."
 fi
 
 # Update µOS++ xPacks
@@ -65,3 +59,9 @@ do_update_xpacks "stm32f4-hal"
 do_update_xpacks "stm32f7-cmsis"
 do_update_xpacks "stm32f7-hal"
 do_update_xpacks "freertos"
+
+do_update_xpacks "scripts"
+
+echo
+echo "Done."
+echo
