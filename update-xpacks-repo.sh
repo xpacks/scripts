@@ -16,32 +16,12 @@ xpacks_repo_folder="${XPACKS_REPO_FOLDER:-$HOME/.xpacks}"
 
 # -----------------------------------------------------------------------------
 
-# Update a single Git, or clone at first run.
-# $1 = absolute folder.
-# $2 = git absolute url.
-do_git_update() {
-  echo
-  if [ -d "$1" ]
-  then
-    echo "Checking '$1'..."
-    (cd "$1"; git pull)
-  else
-    git clone "$2" "$1"
-  fi
-  (cd "$1"; git branch)
-}
+helper_script="$xpacks_repo_folder/ilg/scripts.git/xpacks-helper.sh"
 
-# Update a single µOS++ xpack.
-# $1 = GitHub project name.
-do_update_micro_os_plus() {
-  do_git_update "${xpacks_repo_folder}/ilg/$1.git" "https://github.com/micro-os-plus/$1.git"
-}
+# Include common definitions from helper script.
+source "${helper_script}"
 
-# Update a single third party xPack.
-# $1 = GitHub project name.
-do_update_xpacks() {
-  do_git_update "${xpacks_repo_folder}/ilg/$1.git" "https://github.com/xpacks/$1.git"
-}
+# -----------------------------------------------------------------------------
 
 if [ ! -d "${xpacks_repo_folder}" ]
 then
