@@ -2,6 +2,10 @@
 
 Various scripts used for processing the xPacks.
 
+These scripts were created on macOS, and the ones suffixed with `.command` are specific to macOS; the `.sh` scripts should also be fine on GNU/Linux, Windows MSYS2, and on the new [Windows Subsystem for Linux](https://msdn.microsoft.com/commandline/wsl/about).
+
+For those who insist on native Windows, separate PowerShell scripts would be required, but considering Microsoft's move towards Linux, this would probably not be worth the effort. Anyway, if you manage to create them, please consider improving your karma and contribute them back to the community.
+
 ## Environment variables
 
 ### XPACKS\_REPO\_FOLDER
@@ -39,9 +43,19 @@ The result should be a folder like `~/.xpacks/ilg/scripts.git/` containing sever
 
 ## update-xpacks-repo.sh
 
-This script will download the existing xPacks into the `XPACKS_REPO_FOLDER`.
+This script will download the existing xPacks into the `XPACKS_REPO_FOLDER`. 
+
+For now, the format is the original Git, but separate versions will be added as the XCDL tool will be available.
+
+During the first run, the repositories will be cloned locally.
 
 Subsequent runs will update the xPacks to their latest commits.
+
+If, for one reason or another, it is necessary to stick with one older commit for a specific repository, after the initial clone, temporarily comment out the `do_update_*` line to avoid further updates.
+
+## update-xpacks-repo.mac.command
+
+Wrapper for macOS; execute it by double clicking in Finder.
 
 ## Deprecated
 
