@@ -28,7 +28,7 @@ chflags nohidden ~/.xpacks
 
 This initial script downloads the GitHub [`xpacks/scripts`](https://github.com/xpacks/scripts) project into `XPACKS_REPO_FOLDER`, to provide access to further scripts.
 
-Download [bootstrap.sh](https://github.com/xpacks/scripts/raw/master/bootstrap.sh) to a folder of your choice and run it via Bash in a terminal. For example:
+Download [bootstrap.sh](https://github.com/xpacks/scripts/blob/master/bootstrap.sh) to a folder of your choice and run it via Bash in a terminal. For example:
 
 ```
 curl -L https://github.com/xpacks/scripts/raw/master/bootstrap.sh -o ~/Downloads/bootstrap.sh
