@@ -4,18 +4,18 @@ Various scripts used for processing the xPacks.
 
 ## Environment variables
 
-### XPACKS_FOLDER
+### XPACKS\_REPO\_FOLDER
 
 Set this variable to the location where you want the xPacks repo to be stored. For example:
 
 ```
-XPACKS_FOLDER=$USER/my-special-xpacks-folder
+XPACKS_REPO_FOLDER=$USER/my-special-xpacks-folder
 ```
 
 If not defined, the default folder is `~/.xpacks`:
 
 ```
-XPACKS_FOLDER=$USER/.xpacks
+XPACKS_REPO_FOLDER=$USER/.xpacks
 ```
 
 Please be aware that on macOS, this folder, having a name that starts with a dot, is not visible by default in Finder; to make it visible the following command must be executed in a terminal:
@@ -26,7 +26,7 @@ chflags nohidden ~/.xpacks
 
 ## bootstrap.sh
 
-This initial script downloads the GitHub [`xpacks/scripts`](https://github.com/xpacks/scripts) project into `XPACKS_FOLDER`, to provide access to further scripts.
+This initial script downloads the GitHub [`xpacks/scripts`](https://github.com/xpacks/scripts) project into `XPACKS_REPO_FOLDER`, to provide access to further scripts.
 
 Download [bootstrap.sh](https://github.com/xpacks/scripts/raw/master/bootstrap.sh) to a folder of your choice and run it via Bash in a terminal. For example:
 
@@ -39,7 +39,7 @@ The result should be a folder like `~/.xpacks/ilg/scripts.git/` containing sever
 
 ## update-xpacks-repo.sh
 
-This script will download the existing xPacks into the `XPACKS_FOLDER`.
+This script will download the existing xPacks into the `XPACKS_REPO_FOLDER`.
 
 Subsequent runs will update the xPacks to their latest commits.
 

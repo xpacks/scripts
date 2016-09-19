@@ -10,7 +10,7 @@ IFS=$'\n\t'
 
 # Prefer the environment location XPACKS_FOLDER, if defined,
 # but default to '.xpacks'.
-xpacks_repo_folder="${XPACKS_FOLDER:-$HOME/.xpacks}"
+xpacks_repo_folder="${XPACKS_REPO_FOLDER:-$HOME/.xpacks}"
 
 # Update a single Git, or clone at first run.
 # $1 = absolute folder.
