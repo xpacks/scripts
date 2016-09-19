@@ -56,7 +56,7 @@ do_greet() {
 do_load_repo() {
   if [ ! -d "${xpacks_repo_folder}" ]
   then
-    update_script="$(dirname $(dirname $(dirname ${script})))/scripts/update-xpacks-repo.sh"
+    update_script="$xpacks_repo_folder/ilg/scripts.git/update-xpacks-repo.sh"
 
     bash "${update_script}"
   fi
