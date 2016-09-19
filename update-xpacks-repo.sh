@@ -2,15 +2,19 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# -----------------------------------------------------------------------------
 # Until the XCDL utility will be functional, use this Bash script
 # to update the xPacks repository.
-
+#
 # During the first run, the repositories will be cloned into the local folder.
 # Subsequent runs will pull the latest commits.
+# -----------------------------------------------------------------------------
 
 # Prefer the environment location XPACKS_FOLDER, if defined,
 # but default to '.xpacks'.
 xpacks_repo_folder="${XPACKS_REPO_FOLDER:-$HOME/.xpacks}"
+
+# -----------------------------------------------------------------------------
 
 # Update a single Git, or clone at first run.
 # $1 = absolute folder.
@@ -47,6 +51,8 @@ else
   echo "Using ${xpacks_repo_folder}..."
 fi
 
+# -----------------------------------------------------------------------------
+
 # Update µOS++ xPacks
 do_update_micro_os_plus "cmsis-plus"
 do_update_micro_os_plus "micro-os-plus-iii"
@@ -65,3 +71,5 @@ do_update_xpacks "scripts"
 echo
 echo "Done."
 echo
+
+# -----------------------------------------------------------------------------
