@@ -40,6 +40,37 @@ do_process_args() {
   done
 }
 
+# -----------------------------------------------------------------------------
+
+# Update a single Git, or clone at first run.
+# $1 = absolute folder.
+# $2 = git absolute url.
+do_git_update() {
+  echo
+  if [ -d "$1" ]
+  then
+    echo "Checking '$1'..."
+    (cd "$1"; git pull)
+  else
+    git clone "$2" "$1"
+  fi
+  (cd "$1"; git branch)
+}
+
+# Update a single µOS++ xpack.
+# $1 = GitHub project name.
+do_update_micro_os_plus() {
+  do_git_update "${xpacks_repo_folder}/ilg/$1.git" "https://github.com/micro-os-plus/$1.git"
+}
+
+# Update a single third party xPack.
+# $1 = GitHub project name.
+do_update_xpacks() {
+  do_git_update "${xpacks_repo_folder}/ilg/$1.git" "https://github.com/xpacks/$1.git"
+}
+
+# -----------------------------------------------------------------------------
+
 do_greet() {
   project_name="$(basename $(dirname $(dirname ${script})))"
   echo
@@ -120,6 +151,28 @@ do_select_pack_folder() {
     pack_folder="${use_development_tree}/$2"
   else
     pack_folder="${xpacks_repo_folder}/$1"
+  fi
+}
+
+# $1 = GitHub project name.
+do_check_micro_os_plus() {
+  if [ -z "${use_development_tree}" ]
+  then
+    if [[ ! -d "${pack_folder}" ]]
+    then
+      do_update_micro_os_plus $1
+    fi
+  fi
+}
+
+# $1 = GitHub project name.
+do_check_xpacks() {
+  if [ -z "${use_development_tree}" ]
+  then
+    if [[ ! -d "${pack_folder}" ]]
+    then
+      do_update_xpacks $1
+    fi
   fi
 }
 
@@ -352,6 +405,7 @@ rm "${TMP_FILE}"
 # -----------------------------------------------------------------------------
 
 do_add_arm_cmsis_xpack() {
+  do_check_xpacks "arm-cmsis"
   do_prepare_dest "arm-cmsis-xpack"
   do_select_pack_folder "ilg/arm-cmsis.git" "ilg/arm/arm-cmsis-xpack"
 
@@ -362,6 +416,7 @@ do_add_arm_cmsis_xpack() {
 # -----------------------------------------------------------------------------
 
 do_add_cmsis_plus_xpack() {
+  do_check_micro_os_plus "cmsis-plus"
   do_prepare_dest "micro-os-plus-xpack"
   do_select_pack_folder "ilg/cmsis-plus.git" "ilg/arm/cmsis-plus-xpack"
 
@@ -381,6 +436,7 @@ do_add_cmsis_plus_xpack() {
 # -----------------------------------------------------------------------------
 
 do_add_micro_os_plus_iii_xpack() {
+  do_check_micro_os_plus "micro-os-plus-iii"
   do_prepare_dest "micro-os-plus-xpack"
   do_select_pack_folder "ilg/micro-os-plus-iii.git" "ilg/portable/micro-os-plus-xpack"
 
@@ -399,6 +455,7 @@ do_add_stm32_cmsis_xpack() {
   local family=${device:5:2}
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
+  do_check_xpacks "stm32${family}-cmsis"
   do_prepare_dest "stm32${family}-cmsis-xpack"
   do_select_pack_folder "ilg/stm32${family}-cmsis.git" "ilg/stm/stm32${family}-cmsis-xpack"
 
@@ -421,6 +478,7 @@ do_add_stm32_cmsis_drivers_xpack() {
   local family=${device:5:2}
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
+  do_check_xpacks "stm32${family}-cmsis"
   do_prepare_dest "stm32${family}-cmsis-xpack"
   do_select_pack_folder "ilg/stm32${family}-cmsis.git" "ilg/stm/stm32${family}-cmsis-xpack"
 
@@ -435,6 +493,7 @@ do_add_stm32_hal_xpack() {
   local family=$(echo $1 | tr '[:upper:]' '[:lower:]')
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
+  do_check_xpacks "stm32${family}-hal"
   do_prepare_dest "stm32${family}-hal-xpack"
   do_select_pack_folder "ilg/stm32${family}-hal.git" "ilg/stm/stm32${family}-hal-xpack"
 
