@@ -9,6 +9,8 @@
 do_process_args() {
   use_development_tree=""
   writable=""
+  verbose=""
+  link=""
 
   while [ $# -gt 0 ]
   do
@@ -24,10 +26,21 @@ do_process_args() {
         shift 1
         ;;
 
+      --link)
+        link="y"
+        writable="y"
+        shift 1
+        ;;
+
+      --verbose)
+        verbose="-v"
+        shift 1
+        ;;
+
       --help)
         echo "Update xPacks."
         echo "Usage:"
-        echo "    bash $(basename $0) [--read-write] [--dev-tree absolute-path] [--help]"
+        echo "    bash $(basename $0) [--link] [--read-write] [--dev-tree absolute-path] [--help]"
         echo
         exit 1
         ;;
@@ -79,7 +92,7 @@ do_greet() {
   then
     echo "Using the development tree '${use_development_tree}'..."
   else
-    echo "Using xPacks '${xpacks_repo_folder}'..."
+    echo "Using xPacks from '${xpacks_repo_folder}'..."
   fi
   echo
 }
@@ -196,6 +209,48 @@ do_create_src() {
     mkdir -p "${dest_folder}/src"
   fi
 }
+
+# $1 $2 ... source files or folders
+# $N destination folder
+do_add_content() {
+  local last="${@: -1}"
+
+  while [ $# -ge 2 ]
+  do 
+    local dest="${last}/$(basename $1)"
+
+    if [ -f "$1" ]
+    then
+      mkdir -p "${last}"
+
+      if [ "${link}" == "y" ]
+      then
+        ln ${verbose} "$1" "${dest}"
+      else
+        cp -r ${verbose} "$1" "${dest}"
+      fi
+    elif [ -d "$1" ]
+    then
+      cd "$1"
+
+      # Create all intermediate folders 
+      find . -type d -exec mkdir -pv "${dest}"/{} \;
+
+      if [ "${link}" == "y" ]
+      then
+        find . -type f -exec ln ${verbose} {} "${dest}"/{} \;
+      else
+        find . -type f -exec cp ${verbose} {} "${dest}"/{} \;
+      fi
+    else
+      echo "Not supported content $1"
+      exit 1
+    fi
+
+    shift
+  done
+}
+
 
 # -----------------------------------------------------------------------------
 
@@ -404,13 +459,24 @@ rm "${TMP_FILE}"
 
 # -----------------------------------------------------------------------------
 
+do_test() {
+  echo Baburiba $@
+  echo "${@: -1}"
+  while [ $# -ge 2 ]
+  do 
+    echo $1
+    shift
+  done
+}
+
+
 do_add_arm_cmsis_xpack() {
   do_prepare_dest "arm-cmsis-xpack"
   do_select_pack_folder "ilg/arm-cmsis.git" "ilg/arm/arm-cmsis-xpack"
   do_check_xpacks "arm-cmsis"
 
   do_create_include
-  cp -r "${pack_folder}/CMSIS/Include"/* "${dest_folder}/include"
+  do_add_content "${pack_folder}/CMSIS/Include"/* "${dest_folder}/include"
 }
 
 # -----------------------------------------------------------------------------
@@ -421,16 +487,17 @@ do_add_cmsis_plus_xpack() {
   do_check_micro_os_plus "cmsis-plus"
 
   do_create_include
-  cp -r "${pack_folder}/include"/* "${dest_folder}/include"
+  do_add_content "${pack_folder}/include"/* "${dest_folder}/include"
 
   do_create_src
-  cp -r "${pack_folder}/src/diag" "${dest_folder}/src"
-  cp -r "${pack_folder}/src/libc" "${dest_folder}/src"
-  cp -r "${pack_folder}/src/libcpp" "${dest_folder}/src"
-  cp -r "${pack_folder}/src/rtos" "${dest_folder}/src"
-  cp -r "${pack_folder}/src/semihosting" "${dest_folder}/src"
-  cp -r "${pack_folder}/src/startup" "${dest_folder}/src"
-  cp -r "${pack_folder}/src/memory" "${dest_folder}/src"
+  do_add_content "${pack_folder}/src/diag" "${dest_folder}/src"
+  do_add_content "${pack_folder}/src/libc" "${dest_folder}/src"
+  do_add_content "${pack_folder}/src/libcpp" "${dest_folder}/src"
+  do_add_content "${pack_folder}/src/rtos" "${dest_folder}/src"
+  do_add_content "${pack_folder}/src/semihosting" "${dest_folder}/src"
+  do_add_content "${pack_folder}/src/startup" "${dest_folder}/src"
+  do_add_content "${pack_folder}/src/memory" "${dest_folder}/src"
+  do_add_content "${pack_folder}/src/utils" "${dest_folder}/src"
 }
 
 # -----------------------------------------------------------------------------
@@ -441,10 +508,10 @@ do_add_micro_os_plus_iii_xpack() {
   do_check_micro_os_plus "micro-os-plus-iii"
 
   mkdir -p "${dest_folder}/include"
-  cp -r "${pack_folder}/include"/* "${dest_folder}/include"
+  do_add_content "${pack_folder}/include"/* "${dest_folder}/include"
 
   mkdir -p "${dest_folder}/src/rtos/port"
-  cp -r "${pack_folder}/src/rtos"/* "${dest_folder}/src/rtos/port"
+  do_add_content "${pack_folder}/src/rtos"/* "${dest_folder}/src/rtos/port"
 }
 
 # -----------------------------------------------------------------------------
@@ -460,14 +527,14 @@ do_add_stm32_cmsis_xpack() {
   do_check_xpacks "stm32${family}-cmsis"
 
   do_create_include
-  cp -r "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/cmsis_device.h" "${dest_folder}/include"
-  cp -r "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" "${dest_folder}/include"
-  cp -r "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" "${dest_folder}/include"
-  cp -r "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" "${dest_folder}/include"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/cmsis_device.h" "${dest_folder}/include"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" "${dest_folder}/include"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" "${dest_folder}/include"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" "${dest_folder}/include"
 
   do_create_src "${dest_folder}/src/startup"
-  cp -r "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" "${dest_folder}/src/startup"
-  cp -r "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/gcc/vectors_${device}.c" "${dest_folder}/src/startup"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" "${dest_folder}/src/startup"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/gcc/vectors_${device}.c" "${dest_folder}/src/startup"
 }
 
 # -----------------------------------------------------------------------------
@@ -483,7 +550,7 @@ do_add_stm32_cmsis_drivers_xpack() {
   do_check_xpacks "stm32${family}-cmsis"
 
   do_create_src "${dest_folder}/src/drivers"
-  cp -r "${pack_folder}/CMSIS/Driver/"* "${dest_folder}/src/drivers"
+  do_add_content "${pack_folder}/CMSIS/Driver/"* "${dest_folder}/src/drivers"
 }
 
 # -----------------------------------------------------------------------------
@@ -498,10 +565,10 @@ do_add_stm32_hal_xpack() {
   do_check_xpacks "stm32${family}-hal"
 
   do_create_include
-  cp -r "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* "${dest_folder}/include"
+  do_add_content "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* "${dest_folder}/include"
 
   do_create_src
-  cp -r "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Src"/* "${dest_folder}/src"
+  do_add_content "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Src"/* "${dest_folder}/src"
 }
 
 # -----------------------------------------------------------------------------
@@ -515,10 +582,10 @@ do_add_stm32_hal_cube() {
   do_set_cube_folder
 
   do_create_include
-  cp -r "${cube_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* "${dest_folder}/include"
+  do_add_content "${cube_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* "${dest_folder}/include"
 
   do_create_src
-  cp -r "${cube_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Src"/* "${dest_folder}/src"
+  do_add_content "${cube_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Src"/* "${dest_folder}/src"
 }
 
 # -----------------------------------------------------------------------------
@@ -534,12 +601,12 @@ do_add_stm32_cmsis_cube() {
 
   do_create_include
   echo "#include \"stm32${family}xx.h\"" >"${dest_folder}/include/cmsis_device.h"
-  cp -r "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" "${dest_folder}/include"
-  cp -r "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" "${dest_folder}/include"
-  cp -r "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" "${dest_folder}/include"
+  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" "${dest_folder}/include"
+  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" "${dest_folder}/include"
+  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" "${dest_folder}/include"
 
   do_create_src "${dest_folder}/src/startup"
-  cp -r "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" "${dest_folder}/src/startup"
+  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" "${dest_folder}/src/startup"
   do_create_vectors "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/arm/startup_${device}.s" >"${dest_folder}/src/startup/vectors_${device}.c"
 }
 
