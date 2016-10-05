@@ -149,10 +149,13 @@ do_done() {
 }
 
 # $1 = xpack name
-do_prepare_dest() {
+do_tell_xpack() {
   echo
   echo "Processing '$1'..."
+}
 
+# $1 = xpack name
+do_prepare_dest() {
   dest_folder="${generated_folder}/$1"
 }
 
@@ -471,21 +474,35 @@ do_test() {
 
 
 do_add_arm_cmsis_xpack() {
-  do_prepare_dest "arm-cmsis-xpack"
+  do_tell_xpack "arm-cmsis-xpack"
+
   do_select_pack_folder "ilg/arm-cmsis.git" "ilg/arm/arm-cmsis-xpack"
   do_check_xpacks "arm-cmsis"
 
+  do_prepare_dest "arm-cmsis-xpack"
   do_create_include
-  do_add_content "${pack_folder}/CMSIS/Include"/* "${dest_folder}/include"
+  do_add_content "${pack_folder}/CMSIS/Include"/* "${dest_folder}/include/core"
 }
 
+do_add_arm_cmsis_driver_xpack() {
+  do_tell_xpack "arm-cmsis-xpack"
+
+  do_select_pack_folder "ilg/arm-cmsis.git" "ilg/arm/arm-cmsis-xpack"
+  do_check_xpacks "arm-cmsis"
+
+  do_prepare_dest "arm-cmsis-xpack"
+  do_create_include
+  do_add_content "${pack_folder}/CMSIS/Driver/Include"/* "${dest_folder}/include/driver"
+}
 # -----------------------------------------------------------------------------
 
 do_add_cmsis_plus_xpack() {
-  do_prepare_dest "micro-os-plus-xpack"
+  do_tell_xpack "micro-os-plus-xpack"
+
   do_select_pack_folder "ilg/cmsis-plus.git" "ilg/arm/cmsis-plus-xpack"
   do_check_micro_os_plus "cmsis-plus"
 
+  do_prepare_dest "micro-os-plus-xpack"
   do_create_include
   do_add_content "${pack_folder}/include"/* "${dest_folder}/include"
 
@@ -498,14 +515,45 @@ do_add_cmsis_plus_xpack() {
   do_add_content "${pack_folder}/src/startup" "${dest_folder}/src"
   do_add_content "${pack_folder}/src/memory" "${dest_folder}/src"
   do_add_content "${pack_folder}/src/utils" "${dest_folder}/src"
+
+  while [ $# -ge 1 ]
+  do
+    do_add_content "${pack_folder}/src/$1" "${dest_folder}/src"
+    shift
+  done
+}
+
+do_add_cmsis_plus_posix_io_xpack() {
+  do_tell_xpack "micro-os-plus-xpack"
+
+  do_select_pack_folder "ilg/cmsis-plus.git" "ilg/arm/cmsis-plus-xpack"
+  do_check_micro_os_plus "cmsis-plus"
+
+  do_prepare_dest "micro-os-plus-xpack"
+  do_create_src
+  do_add_content "${pack_folder}/src/posix-io" "${dest_folder}/src"
+}
+
+do_add_cmsis_plus_driver_xpack() {
+  do_tell_xpack "micro-os-plus-xpack"
+
+  do_select_pack_folder "ilg/cmsis-plus.git" "ilg/arm/cmsis-plus-xpack"
+  do_check_micro_os_plus "cmsis-plus"
+
+  do_prepare_dest "micro-os-plus-xpack"
+  do_create_src
+  do_add_content "${pack_folder}/src/posix-io" "${dest_folder}/src"
 }
 
 # -----------------------------------------------------------------------------
 
 do_add_micro_os_plus_iii_xpack() {
-  do_prepare_dest "micro-os-plus-xpack"
+  do_tell_xpack "micro-os-plus-xpack"
+
   do_select_pack_folder "ilg/micro-os-plus-iii.git" "ilg/portable/micro-os-plus-xpack"
   do_check_micro_os_plus "micro-os-plus-iii"
+
+  do_prepare_dest "micro-os-plus-xpack"
 
   mkdir -p "${dest_folder}/include"
   do_add_content "${pack_folder}/include"/* "${dest_folder}/include"
@@ -522,19 +570,21 @@ do_add_stm32_cmsis_xpack() {
   local family=${device:5:2}
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
-  do_prepare_dest "stm32${family}-cmsis-xpack"
+  do_tell_xpack "stm32${family}-cmsis-xpack"
+
   do_select_pack_folder "ilg/stm32${family}-cmsis.git" "ilg/stm/stm32${family}-cmsis-xpack"
   do_check_xpacks "stm32${family}-cmsis"
 
+  do_prepare_dest "stm32${family}-cmsis-xpack"
   do_create_include
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/cmsis_device.h" "${dest_folder}/include"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" "${dest_folder}/include"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" "${dest_folder}/include"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" "${dest_folder}/include"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/cmsis_device.h" "${dest_folder}/include/${device}"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" "${dest_folder}/include/${device}"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" "${dest_folder}/include/${device}"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" "${dest_folder}/include/${device}"
 
-  do_create_src "${dest_folder}/src/startup"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" "${dest_folder}/src/startup"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/gcc/vectors_${device}.c" "${dest_folder}/src/startup"
+  do_create_src "${dest_folder}/src/${device}"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" "${dest_folder}/src/${device}"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/gcc/vectors_${device}.c" "${dest_folder}/src/${device}"
 }
 
 # -----------------------------------------------------------------------------
@@ -545,10 +595,12 @@ do_add_stm32_cmsis_drivers_xpack() {
   local family=${device:5:2}
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
-  do_prepare_dest "stm32${family}-cmsis-xpack"
+  do_tell_xpack "stm32${family}-cmsis-xpack"
+
   do_select_pack_folder "ilg/stm32${family}-cmsis.git" "ilg/stm/stm32${family}-cmsis-xpack"
   do_check_xpacks "stm32${family}-cmsis"
 
+  do_prepare_dest "stm32${family}-cmsis-xpack"
   do_create_src "${dest_folder}/src/drivers"
   do_add_content "${pack_folder}/CMSIS/Driver/"* "${dest_folder}/src/drivers"
 }
@@ -560,15 +612,19 @@ do_add_stm32_hal_xpack() {
   local family=$(echo $1 | tr '[:upper:]' '[:lower:]')
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
-  do_prepare_dest "stm32${family}-hal-xpack"
+  do_tell_xpack "stm32${family}-hal-xpack"
+
   do_select_pack_folder "ilg/stm32${family}-hal.git" "ilg/stm/stm32${family}-hal-xpack"
   do_check_xpacks "stm32${family}-hal"
 
+  do_prepare_dest "stm32${family}-hal-xpack"
   do_create_include
   do_add_content "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* "${dest_folder}/include"
 
   do_create_src
   do_add_content "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Src"/* "${dest_folder}/src"
+  echo "Removing '${dest_folder}/src/*_template.c'..."
+  rm "${dest_folder}/src/"*_template.c
 }
 
 # -----------------------------------------------------------------------------
@@ -578,9 +634,11 @@ do_add_stm32_hal_cube() {
   local family=$1
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
-  do_prepare_dest "stm32-hal-cube"
+  do_tell_xpack "stm32-hal-cube"
+
   do_set_cube_folder
 
+  do_prepare_dest "stm32-hal-cube"
   do_create_include
   do_add_content "${cube_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* "${dest_folder}/include"
 
@@ -595,6 +653,8 @@ do_add_stm32_cmsis_cube() {
   local device=$(echo $1 | tr '[:upper:]' '[:lower:]')
   local family=${device:5:2}
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
+
+  do_tell_xpack "stm32-cmsis-cube"
 
   do_prepare_dest "stm32-cmsis-cube"
   do_set_cube_folder
