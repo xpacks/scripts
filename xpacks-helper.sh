@@ -11,6 +11,7 @@ do_process_args() {
   writable=""
   verbose=""
   link=""
+  symlink=""
 
   while [ $# -gt 0 ]
   do
@@ -29,6 +30,13 @@ do_process_args() {
       --link)
         link="y"
         writable="y"
+        shift 1
+        ;;
+
+      --symlink)
+        link="y"
+        writable="y"
+        symlink="-s"
         shift 1
         ;;
 
@@ -122,7 +130,10 @@ do_create_dest() {
   local file_name="NON_EDITABLE.txt"
   mkdir -p "${generated_folder}"
   echo "This folder was automatically generated." >"${generated_folder}/${file_name}"
-  echo "All files are set read-only and cannot be edited." >>"${generated_folder}/${file_name}"
+  if [ "$writable" != "y" ]
+  then
+    echo "All files are set read-only and cannot be edited." >>"${generated_folder}/${file_name}"
+  fi
 }
 
 do_protect() {
@@ -157,17 +168,14 @@ do_tell_xpack() {
 # $1 = xpack name
 do_prepare_dest() {
   dest_folder="${generated_folder}/$1"
+
+  echo "Creating '${dest_folder}'..."
+  mkdir -p "${dest_folder}"
 }
 
 # $1 = git path
-# $2 = tree path
 do_select_pack_folder() {
-  if [ -n "${use_development_tree}" ]
-  then
-    pack_folder="${use_development_tree}/$2"
-  else
-    pack_folder="${xpacks_repo_folder}/$1"
-  fi
+  pack_folder="${xpacks_repo_folder}/$1"
 }
 
 # $1 = GitHub project name.
@@ -196,41 +204,20 @@ do_set_cube_folder() {
   cube_folder="$(dirname $(dirname ${script}))/cube-mx"
 }
 
-do_create_include() {
-  echo "Creating '${dest_folder}/include'..."
-  mkdir -p "${dest_folder}/include"
-}
-
-
-do_create_src() {
-  if [ $# -ge 1 ]
-  then
-    echo "Creating '${1}'..."
-    mkdir -p "${1}"
-  else
-    echo "Creating '${dest_folder}/src'..."
-    mkdir -p "${dest_folder}/src"
-  fi
-}
-
 # $1 $2 ... source files or folders
 # $N destination folder
 do_add_content() {
-  local last="${@: -1}"
-
-  while [ $# -ge 2 ]
+  while [ $# -ge 1 ]
   do 
-    local dest="${last}/$(basename $1)"
+    local dest="${dest_folder}/$(basename $1)"
 
     if [ -f "$1" ]
     then
-      mkdir -p "${last}"
-
       if [ "${link}" == "y" ]
       then
-        ln ${verbose} "$1" "${dest}"
+        ln ${symlink} ${verbose} "$1" "${dest}"
       else
-        cp -r ${verbose} "$1" "${dest}"
+        cp ${verbose} "$1" "${dest}"
       fi
     elif [ -d "$1" ]
     then
@@ -241,9 +228,9 @@ do_add_content() {
 
       if [ "${link}" == "y" ]
       then
-        find . -type f -exec ln ${verbose} {} "${dest}"/{} \;
+        find . -type f -exec ln ${symlink} ${verbose} "$1"/{} "${dest}"/{} \;
       else
-        find . -type f -exec cp ${verbose} {} "${dest}"/{} \;
+        find . -type f -exec cp ${verbose} "$1"/{} "${dest}"/{} \;
       fi
     else
       echo "Not supported content $1"
@@ -462,104 +449,78 @@ rm "${TMP_FILE}"
 
 # -----------------------------------------------------------------------------
 
-do_test() {
-  echo Baburiba $@
-  echo "${@: -1}"
-  while [ $# -ge 2 ]
-  do 
-    echo $1
-    shift
-  done
-}
-
-
+# Optional arguments: 'driver'.
 do_add_arm_cmsis_xpack() {
-  do_tell_xpack "arm-cmsis-xpack"
+  local pack_name='arm-cmsis'
+  do_tell_xpack "${pack_name}-xpack"
 
-  do_select_pack_folder "ilg/arm-cmsis.git" "ilg/arm/arm-cmsis-xpack"
-  do_check_xpacks "arm-cmsis"
+  do_select_pack_folder "ilg/${pack_name}.git"
+  do_check_xpacks "${pack_name}"
 
-  do_prepare_dest "arm-cmsis-xpack"
-  do_create_include
-  do_add_content "${pack_folder}/CMSIS/Include"/* "${dest_folder}/include/core"
-}
-
-do_add_arm_cmsis_driver_xpack() {
-  do_tell_xpack "arm-cmsis-xpack"
-
-  do_select_pack_folder "ilg/arm-cmsis.git" "ilg/arm/arm-cmsis-xpack"
-  do_check_xpacks "arm-cmsis"
-
-  do_prepare_dest "arm-cmsis-xpack"
-  do_create_include
-  do_add_content "${pack_folder}/CMSIS/Driver/Include"/* "${dest_folder}/include/driver"
-}
-# -----------------------------------------------------------------------------
-
-do_add_cmsis_plus_xpack() {
-  do_tell_xpack "micro-os-plus-xpack"
-
-  do_select_pack_folder "ilg/cmsis-plus.git" "ilg/arm/cmsis-plus-xpack"
-  do_check_micro_os_plus "cmsis-plus"
-
-  do_prepare_dest "micro-os-plus-xpack"
-  do_create_include
-  do_add_content "${pack_folder}/include"/* "${dest_folder}/include"
-
-  do_create_src
-  do_add_content "${pack_folder}/src/diag" "${dest_folder}/src"
-  do_add_content "${pack_folder}/src/libc" "${dest_folder}/src"
-  do_add_content "${pack_folder}/src/libcpp" "${dest_folder}/src"
-  do_add_content "${pack_folder}/src/rtos" "${dest_folder}/src"
-  do_add_content "${pack_folder}/src/semihosting" "${dest_folder}/src"
-  do_add_content "${pack_folder}/src/startup" "${dest_folder}/src"
-  do_add_content "${pack_folder}/src/memory" "${dest_folder}/src"
-  do_add_content "${pack_folder}/src/utils" "${dest_folder}/src"
+  # Always add 'core'.
+  do_prepare_dest "${pack_name}/include/core"
+  do_add_content "${pack_folder}/CMSIS/Include"/*
 
   while [ $# -ge 1 ]
   do
-    do_add_content "${pack_folder}/src/$1" "${dest_folder}/src"
+    case $1 in
+    driver)
+      do_prepare_dest "${pack_name}/include/driver"
+      do_add_content "${pack_folder}/CMSIS/Driver/Include"/*
+      ;;
+    esac
     shift
   done
 }
 
-do_add_cmsis_plus_posix_io_xpack() {
-  do_tell_xpack "micro-os-plus-xpack"
+# -----------------------------------------------------------------------------
 
-  do_select_pack_folder "ilg/cmsis-plus.git" "ilg/arm/cmsis-plus-xpack"
-  do_check_micro_os_plus "cmsis-plus"
+# Optional args: src folders, like posix-io, driver
+do_add_cmsis_plus_xpack() {
+  local pack_name='cmsis-plus'
+  do_tell_xpack "${pack_name}-xpack"
 
-  do_prepare_dest "micro-os-plus-xpack"
-  do_create_src
-  do_add_content "${pack_folder}/src/posix-io" "${dest_folder}/src"
-}
+  do_select_pack_folder "ilg/${pack_name}.git"
+  do_check_xpacks "${pack_name}"
 
-do_add_cmsis_plus_driver_xpack() {
-  do_tell_xpack "micro-os-plus-xpack"
+  # Exception to the rule, folder is micro-os-plus, not cmsis-plus; 
+  # The package will be renamed.
+  do_prepare_dest "micro-os-plus/include"
+  do_add_content "${pack_folder}/include"/* 
 
-  do_select_pack_folder "ilg/cmsis-plus.git" "ilg/arm/cmsis-plus-xpack"
-  do_check_micro_os_plus "cmsis-plus"
+  do_prepare_dest "micro-os-plus/src"
+  do_add_content "${pack_folder}/src/diag" 
+  do_add_content "${pack_folder}/src/libc" 
+  do_add_content "${pack_folder}/src/libcpp" 
+  do_add_content "${pack_folder}/src/rtos" 
+  do_add_content "${pack_folder}/src/semihosting" 
+  do_add_content "${pack_folder}/src/startup" 
+  do_add_content "${pack_folder}/src/memory" 
+  do_add_content "${pack_folder}/src/utils" 
 
-  do_prepare_dest "micro-os-plus-xpack"
-  do_create_src
-  do_add_content "${pack_folder}/src/posix-io" "${dest_folder}/src"
+  while [ $# -ge 1 ]
+  do
+    do_add_content "${pack_folder}/src/$1" 
+    shift
+  done
 }
 
 # -----------------------------------------------------------------------------
 
 do_add_micro_os_plus_iii_xpack() {
-  do_tell_xpack "micro-os-plus-xpack"
+  local pack_name='micro-os-plus-iii'
+  do_tell_xpack "${pack_name}-xpack"
 
-  do_select_pack_folder "ilg/micro-os-plus-iii.git" "ilg/portable/micro-os-plus-xpack"
-  do_check_micro_os_plus "micro-os-plus-iii"
+  do_select_pack_folder "ilg/${pack_name}.git"
+  do_check_xpacks "${pack_name}"
 
-  do_prepare_dest "micro-os-plus-xpack"
+  # Exception, folder with diferent name;
+  # Package to be renamed.
+  do_prepare_dest "micro-os-plus-cortexm/include"
+  do_add_content "${pack_folder}/include"/* 
 
-  mkdir -p "${dest_folder}/include"
-  do_add_content "${pack_folder}/include"/* "${dest_folder}/include"
-
-  mkdir -p "${dest_folder}/src/rtos/port"
-  do_add_content "${pack_folder}/src/rtos"/* "${dest_folder}/src/rtos/port"
+  do_prepare_dest "micro-os-plus-cortexm/src"
+  do_add_content "${pack_folder}/src"/* 
 }
 
 # -----------------------------------------------------------------------------
@@ -570,39 +531,37 @@ do_add_stm32_cmsis_xpack() {
   local family=${device:5:2}
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
-  do_tell_xpack "stm32${family}-cmsis-xpack"
+  local pack_name="stm32${family}-cmsis"
+  do_tell_xpack "${pack_name}-xpack"
 
-  do_select_pack_folder "ilg/stm32${family}-cmsis.git" "ilg/stm/stm32${family}-cmsis-xpack"
-  do_check_xpacks "stm32${family}-cmsis"
+  do_select_pack_folder "ilg/${pack_name}.git"
+  do_check_xpacks "${pack_name}"
 
-  do_prepare_dest "stm32${family}-cmsis-xpack"
-  do_create_include
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/cmsis_device.h" "${dest_folder}/include/${device}"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" "${dest_folder}/include/${device}"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" "${dest_folder}/include/${device}"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" "${dest_folder}/include/${device}"
+  do_prepare_dest "${pack_name}/include/${device}"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/cmsis_device.h" 
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" 
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" 
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" 
 
-  do_create_src "${dest_folder}/src/${device}"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" "${dest_folder}/src/${device}"
-  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/gcc/vectors_${device}.c" "${dest_folder}/src/${device}"
+  do_prepare_dest "${pack_name}/src/${device}"
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" 
+  do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/gcc/vectors_${device}.c" 
 }
 
 # -----------------------------------------------------------------------------
 
-# $1 = device name suffix (like "stm32f407xx")
-do_add_stm32_cmsis_drivers_xpack() {
-  local device=$(echo $1 | tr '[:upper:]' '[:lower:]')
-  local family=${device:5:2}
-  local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
+# $1 = family name (like "f0", "f4", ...)
+do_add_stm32_cmsis_driver_xpack() {
+  local family=$(echo $1 | tr '[:upper:]' '[:lower:]')
 
-  do_tell_xpack "stm32${family}-cmsis-xpack"
+  local pack_name="stm32${family}-cmsis"
+  do_tell_xpack "${pack_name}-xpack"
 
-  do_select_pack_folder "ilg/stm32${family}-cmsis.git" "ilg/stm/stm32${family}-cmsis-xpack"
-  do_check_xpacks "stm32${family}-cmsis"
+  do_select_pack_folder "ilg/${pack_name}.git"
+  do_check_xpacks "${pack_name}"
 
-  do_prepare_dest "stm32${family}-cmsis-xpack"
-  do_create_src "${dest_folder}/src/drivers"
-  do_add_content "${pack_folder}/CMSIS/Driver/"* "${dest_folder}/src/drivers"
+  do_prepare_dest "${pack_name}/src/driver"
+  do_add_content "${pack_folder}/CMSIS/Driver/"* 
 }
 
 # -----------------------------------------------------------------------------
@@ -612,38 +571,21 @@ do_add_stm32_hal_xpack() {
   local family=$(echo $1 | tr '[:upper:]' '[:lower:]')
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
-  do_tell_xpack "stm32${family}-hal-xpack"
+  local pack_name="stm32${family}-hal"
 
-  do_select_pack_folder "ilg/stm32${family}-hal.git" "ilg/stm/stm32${family}-hal-xpack"
-  do_check_xpacks "stm32${family}-hal"
+  do_tell_xpack "${pack_name}-xpack"
 
-  do_prepare_dest "stm32${family}-hal-xpack"
-  do_create_include
-  do_add_content "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* "${dest_folder}/include"
+  do_select_pack_folder "ilg/${pack_name}.git"
+  do_check_xpacks "${pack_name}"
 
-  do_create_src
-  do_add_content "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Src"/* "${dest_folder}/src"
-  echo "Removing '${dest_folder}/src/*_template.c'..."
-  rm "${dest_folder}/src/"*_template.c
-}
+  do_prepare_dest "${pack_name}/include"
+  do_add_content "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* 
 
-# -----------------------------------------------------------------------------
+  do_prepare_dest "${pack_name}/src"
+  do_add_content "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Src"/* 
 
-# $1 = family shortcut (like "f0", "f4", ...)
-do_add_stm32_hal_cube() {
-  local family=$1
-  local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
-
-  do_tell_xpack "stm32-hal-cube"
-
-  do_set_cube_folder
-
-  do_prepare_dest "stm32-hal-cube"
-  do_create_include
-  do_add_content "${cube_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* "${dest_folder}/include"
-
-  do_create_src
-  do_add_content "${cube_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Src"/* "${dest_folder}/src"
+  echo "Removing '${dest_folder}/*_template.c'..."
+  rm "${dest_folder}/"*_template.c
 }
 
 # -----------------------------------------------------------------------------
@@ -654,20 +596,43 @@ do_add_stm32_cmsis_cube() {
   local family=${device:5:2}
   local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
 
-  do_tell_xpack "stm32-cmsis-cube"
+  local pack_name="stm32${family}-cmsis"
+  do_tell_xpack "${pack_name}-cube"
 
-  do_prepare_dest "stm32-cmsis-cube"
   do_set_cube_folder
 
-  do_create_include
-  echo "#include \"stm32${family}xx.h\"" >"${dest_folder}/include/cmsis_device.h"
-  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" "${dest_folder}/include"
-  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" "${dest_folder}/include"
-  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" "${dest_folder}/include"
+  do_prepare_dest "${pack_name}/include/${device}"
+  echo "#include \"stm32${family}xx.h\"" >"${dest_folder}/cmsis_device.h"
+  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" 
+  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" 
+  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" 
 
-  do_create_src "${dest_folder}/src/startup"
-  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" "${dest_folder}/src/startup"
-  do_create_vectors "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/arm/startup_${device}.s" >"${dest_folder}/src/startup/vectors_${device}.c"
+  do_prepare_dest "${pack_name}/src/${device}"
+  do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" 
+  do_create_vectors "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/arm/startup_${device}.s" >"${dest_folder}/vectors_${device}.c"
+}
+
+# -----------------------------------------------------------------------------
+
+# $1 = family shortcut (like "f0", "f4", ...)
+do_add_stm32_hal_cube() {
+  local family=$1
+  local family_uc=$(echo ${family} | tr '[:lower:]' '[:upper:]')
+
+  local pack_name="stm32${family}-hal"
+
+  do_tell_xpack "${pack_name}-cube"
+
+  do_set_cube_folder
+
+  do_prepare_dest "${pack_name}/include"
+  do_add_content "${cube_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* 
+
+  do_prepare_dest "${pack_name}/src"
+  do_add_content "${cube_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Src"/* 
+
+  echo "Removing '${dest_folder}/*_template.c'..."
+  rm "${dest_folder}/"*_template.c
 }
 
 # -----------------------------------------------------------------------------
