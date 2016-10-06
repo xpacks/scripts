@@ -7,7 +7,6 @@
 # -----------------------------------------------------------------------------
 
 do_process_args() {
-  use_development_tree=""
   writable=""
   verbose=""
   link=""
@@ -16,11 +15,6 @@ do_process_args() {
   while [ $# -gt 0 ]
   do
     case "$1" in
-
-      --dev-tree)
-        use_development_tree="$2"
-        shift 2
-        ;;
 
       --read-write)
         writable="y"
@@ -48,7 +42,7 @@ do_process_args() {
       --help)
         echo "Update xPacks."
         echo "Usage:"
-        echo "    bash $(basename $0) [--link] [--read-write] [--dev-tree absolute-path] [--help]"
+        echo "    bash $(basename $0) [--symlink|--link] [--read-write] [--help]"
         echo
         exit 1
         ;;
@@ -96,12 +90,7 @@ do_greet() {
   project_name="$(basename $(dirname $(dirname ${script})))"
   echo
   echo "* Generating xPacks for '${project_name}' *"
-  if [ -n "$use_development_tree" ]
-  then
-    echo "Using the development tree '${use_development_tree}'..."
-  else
-    echo "Using xPacks from '${xpacks_repo_folder}'..."
-  fi
+  echo "Using xPacks from '${xpacks_repo_folder}'..."
   echo
 }
 
@@ -180,23 +169,17 @@ do_select_pack_folder() {
 
 # $1 = GitHub project name.
 do_check_micro_os_plus() {
-  if [ -z "${use_development_tree}" ]
+  if [[ ! -d "${pack_folder}" ]]
   then
-    if [[ ! -d "${pack_folder}" ]]
-    then
-      do_update_micro_os_plus $1
-    fi
+    do_update_micro_os_plus $1
   fi
 }
 
 # $1 = GitHub project name.
 do_check_xpacks() {
-  if [ -z "${use_development_tree}" ]
+  if [[ ! -d "${pack_folder}" ]]
   then
-    if [[ ! -d "${pack_folder}" ]]
-    then
-      do_update_xpacks $1
-    fi
+    do_update_xpacks $1
   fi
 }
 
@@ -476,19 +459,19 @@ do_add_arm_cmsis_xpack() {
 # -----------------------------------------------------------------------------
 
 # Optional args: src folders, like posix-io, driver
-do_add_cmsis_plus_xpack() {
-  local pack_name='cmsis-plus'
+do_add_micro_os_plus_iii_xpack() {
+  local pack_name='micro-os-plus-iii'
   do_tell_xpack "${pack_name}-xpack"
 
   do_select_pack_folder "ilg/${pack_name}.git"
-  do_check_xpacks "${pack_name}"
+  do_check_micro_os_plus "${pack_name}"
 
   # Exception to the rule, folder is micro-os-plus, not cmsis-plus; 
   # The package will be renamed.
-  do_prepare_dest "micro-os-plus/include"
+  do_prepare_dest "${pack_name}/include"
   do_add_content "${pack_folder}/include"/* 
 
-  do_prepare_dest "micro-os-plus/src"
+  do_prepare_dest "${pack_name}/src"
   do_add_content "${pack_folder}/src/diag" 
   do_add_content "${pack_folder}/src/libc" 
   do_add_content "${pack_folder}/src/libcpp" 
@@ -507,19 +490,19 @@ do_add_cmsis_plus_xpack() {
 
 # -----------------------------------------------------------------------------
 
-do_add_micro_os_plus_iii_xpack() {
-  local pack_name='micro-os-plus-iii'
+do_add_micro_os_plus_iii_cortexm_xpack() {
+  local pack_name='micro-os-plus-iii-cortexm'
   do_tell_xpack "${pack_name}-xpack"
 
   do_select_pack_folder "ilg/${pack_name}.git"
-  do_check_xpacks "${pack_name}"
+  do_check_micro_os_plus "${pack_name}"
 
   # Exception, folder with diferent name;
   # Package to be renamed.
-  do_prepare_dest "micro-os-plus-cortexm/include"
+  do_prepare_dest "${pack_name}/include"
   do_add_content "${pack_folder}/include"/* 
 
-  do_prepare_dest "micro-os-plus-cortexm/src"
+  do_prepare_dest "${pack_name}/src"
   do_add_content "${pack_folder}/src"/* 
 }
 
