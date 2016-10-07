@@ -29,6 +29,7 @@ do_git_update() {
 # Update a single third party xPack.
 # $1 = GitHub project name.
 do_update_xpacks() {
+  mkdir -p "${xpacks_repo_folder}/ilg"
   do_git_update "${xpacks_repo_folder}/ilg/$1.git" "https://github.com/xpacks/$1.git"
 }
 
