@@ -545,6 +545,9 @@ do_add_stm32_cmsis_driver_xpack() {
 
   do_prepare_dest "${pack_name}/src/driver"
   do_add_content "${pack_folder}/CMSIS/Driver/"* 
+
+  echo "Removing '${dest_folder}/Config'..."
+  rm -rf "${dest_folder}/Config"
 }
 
 # -----------------------------------------------------------------------------
