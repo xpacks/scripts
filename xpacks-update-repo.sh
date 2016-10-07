@@ -33,9 +33,23 @@ fi
 
 # -----------------------------------------------------------------------------
 
+# Update a single Git, if it exists.
+# $1 = absolute folder.
+# $2 = git absolute url.
+do_git_update() {
+  echo
+  if [ -d "$1" ]
+  then
+    echo "Checking '$1'..."
+    (cd "$1"; git pull)
+  fi
+}
+
+# -----------------------------------------------------------------------------
+
 # Update µOS++ xPacks
-do_update_micro_os_plus "cmsis-plus"
 do_update_micro_os_plus "micro-os-plus-iii"
+do_update_micro_os_plus "micro-os-plus-iii-cortexm"
 do_update_micro_os_plus "posix-arch"
 
 # Update third party xPacks

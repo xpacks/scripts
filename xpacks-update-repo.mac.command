@@ -12,4 +12,4 @@ fi
 parent="$(dirname ${script})"
 echo $parent
 
-bash "$parent/update-xpacks-repo.sh"
+bash "$parent/xpacks-update-repo.sh"

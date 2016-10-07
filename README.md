@@ -13,13 +13,13 @@ For those who insist on native Windows, separate PowerShell scripts would be req
 Set this variable to the location where you want the xPacks repo to be stored. For example:
 
 ```
-XPACKS_REPO_FOLDER=$USER/my-special-xpacks-folder
+export XPACKS_REPO_FOLDER=$USER/my-special-xpacks-folder
 ```
 
 If not defined, the default folder is `~/.xpacks`:
 
 ```
-XPACKS_REPO_FOLDER=$USER/.xpacks
+export XPACKS_REPO_FOLDER=$USER/.xpacks
 ```
 
 Please be aware that on macOS, this folder, having a name that starts with a dot, is not visible by default in Finder; to make it visible the following command must be executed in a terminal:
@@ -41,7 +41,7 @@ bash  ~/Downloads/bootstrap.sh
 
 The result should be a folder like `~/.xpacks/ilg/scripts.git/` containing several other scripts.
 
-## update-xpacks-repo.sh
+## xpacks-update-repo.sh
 
 This script will download the existing xPacks into the `XPACKS_REPO_FOLDER`. 
 
@@ -53,7 +53,7 @@ Subsequent runs will update the xPacks to their latest commits.
 
 If, for one reason or another, it is necessary to stick with one older commit for a specific repository, after the initial clone, temporarily comment out the `do_update_*` line to avoid further updates.
 
-## update-xpacks-repo.mac.command
+## xpacks-update-repo.mac.command
 
 Wrapper for macOS; execute it by double clicking in Finder.
 
