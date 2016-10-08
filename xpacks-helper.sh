@@ -8,7 +8,7 @@
 
 # Include all 'xpacks-scripts.sh'
 source_tmp_file="$(mktemp)"
-find "$xpacks_repo_folder" -type f -name 'xpacks-helper.sh' -depth 4 -print \
+find "$xpacks_repo_folder" -type f -name 'xpacks-helper.sh' -maxdepth 4 -print \
 | sed -e '/ilg\/scripts.git\/xpacks-helper.sh/d' \
 | sed -n -e '/scripts\/xpacks-helper.sh/p' \
 | sed -e 's/.*/source "&"/' > ${source_tmp_file}
