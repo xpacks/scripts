@@ -432,13 +432,13 @@ do_add_stm32_cmsis_xpack() {
 
   do_select_pack_folder "ilg/${pack_name}.git"
 
-  do_prepare_dest "${pack_name}/include/${device}"
+  do_prepare_dest "${pack_name}/${device}/include"
   do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/cmsis_device.h" 
   do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" 
   do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" 
   do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" 
 
-  do_prepare_dest "${pack_name}/src/${device}"
+  do_prepare_dest "${pack_name}/${device}/src"
   do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" 
   do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/gcc/vectors_${device}.c" 
 }
@@ -454,7 +454,7 @@ do_add_stm32_cmsis_driver_xpack() {
 
   do_select_pack_folder "ilg/${pack_name}.git"
 
-  do_prepare_dest "${pack_name}/src/driver"
+  do_prepare_dest "${pack_name}/driver/src"
   do_add_content "${pack_folder}/CMSIS/Driver/"* 
 
   echo "Removing '${dest_folder}/Config'..."
@@ -497,13 +497,13 @@ do_add_stm32_cmsis_cube() {
 
   do_set_cube_folder
 
-  do_prepare_dest "${pack_name}/include/${device}"
+  do_prepare_dest "${pack_name}/${device}/include"
   echo "#include \"stm32${family}xx.h\"" >"${dest_folder}/cmsis_device.h"
   do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/stm32${family}xx.h" 
   do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/${device}.h" 
   do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/system_stm32${family}xx.h" 
 
-  do_prepare_dest "${pack_name}/src/${device}"
+  do_prepare_dest "${pack_name}/${device}/src"
   do_add_content "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/system_stm32${family}xx.c" 
   do_create_vectors "${cube_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Source/Templates/arm/startup_${device}.s" >"${dest_folder}/vectors_${device}.c"
 }
