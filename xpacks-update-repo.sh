@@ -33,34 +33,23 @@ fi
 
 # -----------------------------------------------------------------------------
 
-# Update a single Git, if it exists.
-# $1 = absolute folder.
-# $2 = git absolute url.
-do_git_update() {
-  echo
-  if [ -d "$1" ]
-  then
-    echo "Checking '$1'..."
-    (cd "$1"; git pull)
-  fi
-}
+# Update existing git repository.
+# $1 = local git absolute path
+cd "$xpacks_repo_folder"
+tmp_file="$(mktemp)"
+cat <<'EOF' >"${tmp_file}"
+cd "$1/.."
+echo
+pwd
+git pull
 
-# -----------------------------------------------------------------------------
+EOF
 
-# Update µOS++ xPacks
-do_update_micro_os_plus "micro-os-plus-iii"
-do_update_micro_os_plus "micro-os-plus-iii-cortexm"
-do_update_micro_os_plus "posix-arch"
+# Iterate all folders that look like a git repo.
+find "$xpacks_repo_folder" -type d -name '.git' -maxdepth 3 \
+-exec bash "${tmp_file}" {} \;
 
-# Update third party xPacks
-do_update_xpacks "arm-cmsis"
-do_update_xpacks "stm32f4-cmsis"
-do_update_xpacks "stm32f4-hal"
-do_update_xpacks "stm32f7-cmsis"
-do_update_xpacks "stm32f7-hal"
-do_update_xpacks "freertos"
-
-do_update_xpacks "scripts"
+rm "${tmp_file}"
 
 echo
 echo "Done."
