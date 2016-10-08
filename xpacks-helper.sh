@@ -81,7 +81,7 @@ do_install_xpack() {
   echo "Checking '$1'..."
   if [ ! -d "${dst}" ]
   then
-    git clone "${dst}" "$3"
+    git clone "$3" "${dst}"
     (cd "${dst}"; git branch)
   fi
 }
