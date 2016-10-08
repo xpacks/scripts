@@ -25,13 +25,9 @@ tmp_file="$(mktemp)"
 cat <<'EOF' >"${tmp_file}"
 cd "$1/.."
 b="$(git name-rev --name-only HEAD)"
-git diff --exit-code && git diff --cached --exit-code
-if [ $? -ne 0 ]
+d="$(git status)"
+if [[ "${d}" == *nothing\ to\ commit,\ working\ directory\ clean ]]
 then  
-  echo
-  pwd
-  git status -v
-else
   p="$(git log @{push}..)"
   if [ "${p}" != "" ]
   then
@@ -40,6 +36,10 @@ else
     echo "${p}"
     git status -v
   fi
+else
+  echo
+  pwd
+  git status -v
 fi
 
 EOF
