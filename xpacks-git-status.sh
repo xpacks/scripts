@@ -20,6 +20,8 @@ source "${helper_script}"
 
 # -----------------------------------------------------------------------------
 
+# Check if existing git repository requires sync.
+# $1 = local git absolute path
 cd "$xpacks_repo_folder"
 tmp_file="$(mktemp)"
 cat <<'EOF' >"${tmp_file}"
@@ -44,6 +46,7 @@ fi
 
 EOF
 
+# Iterate all folders that look like a git repo.
 find "$xpacks_repo_folder" -type d -name '.git' -depth 3 \
 -exec bash "${tmp_file}" {} \;
 
