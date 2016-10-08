@@ -6,6 +6,15 @@
 # Bash helper script used in project generate.sh scripts.
 # -----------------------------------------------------------------------------
 
+# Include all 'xpacks-scripts.sh'
+source_tmp_file="$(mktemp)"
+find "$xpacks_repo_folder" -type f -name 'xpacks-helper.sh' -depth 4 -print \
+| sed -e '/ilg\/scripts.git\/xpacks-helper.sh/d' \
+| sed -n -e '/scripts\/xpacks-helper.sh/p' \
+| sed -e 's/.*/source "&"/' > ${source_tmp_file}
+source "${source_tmp_file}"
+rm "${source_tmp_file}"
+
 do_process_args() {
   writable=""
   verbose=""
@@ -432,81 +441,7 @@ rm "${TMP_FILE}"
 
 # -----------------------------------------------------------------------------
 
-# Optional arguments: 'driver'.
-do_add_arm_cmsis_xpack() {
-  local pack_name='arm-cmsis'
-  do_tell_xpack "${pack_name}-xpack"
 
-  do_select_pack_folder "ilg/${pack_name}.git"
-  do_check_xpacks "${pack_name}"
-
-  # Always add 'core'.
-  do_prepare_dest "${pack_name}/include/core"
-  do_add_content "${pack_folder}/CMSIS/Include"/*
-
-  while [ $# -ge 1 ]
-  do
-    case $1 in
-    driver)
-      do_prepare_dest "${pack_name}/include/driver"
-      do_add_content "${pack_folder}/CMSIS/Driver/Include"/*
-      ;;
-    esac
-    shift
-  done
-}
-
-# -----------------------------------------------------------------------------
-
-# Optional args: src folders, like posix-io, driver
-do_add_micro_os_plus_iii_xpack() {
-  local pack_name='micro-os-plus-iii'
-  do_tell_xpack "${pack_name}-xpack"
-
-  do_select_pack_folder "ilg/${pack_name}.git"
-  do_check_micro_os_plus "${pack_name}"
-
-  # Exception to the rule, folder is micro-os-plus, not cmsis-plus; 
-  # The package will be renamed.
-  do_prepare_dest "${pack_name}/include"
-  do_add_content "${pack_folder}/include"/* 
-
-  do_prepare_dest "${pack_name}/src"
-  do_add_content "${pack_folder}/src/diag" 
-  do_add_content "${pack_folder}/src/libc" 
-  do_add_content "${pack_folder}/src/libcpp" 
-  do_add_content "${pack_folder}/src/rtos" 
-  do_add_content "${pack_folder}/src/semihosting" 
-  do_add_content "${pack_folder}/src/startup" 
-  do_add_content "${pack_folder}/src/memory" 
-  do_add_content "${pack_folder}/src/utils" 
-
-  while [ $# -ge 1 ]
-  do
-    do_add_content "${pack_folder}/src/$1" 
-    shift
-  done
-}
-
-# -----------------------------------------------------------------------------
-
-do_add_micro_os_plus_iii_cortexm_xpack() {
-  local pack_name='micro-os-plus-iii-cortexm'
-  do_tell_xpack "${pack_name}-xpack"
-
-  do_select_pack_folder "ilg/${pack_name}.git"
-  do_check_micro_os_plus "${pack_name}"
-
-  # Exception, folder with diferent name;
-  # Package to be renamed.
-  do_prepare_dest "${pack_name}/include"
-  do_add_content "${pack_folder}/include"/* 
-
-  do_prepare_dest "${pack_name}/src"
-  do_add_content "${pack_folder}/src"/* 
-}
-
-# -----------------------------------------------------------------------------
 
 # $1 = device name suffix (like "stm32f407xx")
 do_add_stm32_cmsis_xpack() {
