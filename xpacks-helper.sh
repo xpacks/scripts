@@ -66,31 +66,24 @@ do_process_args() {
 
 # -----------------------------------------------------------------------------
 
-# Update a single Git, or clone at first run.
-# $1 = absolute folder.
-# $2 = git absolute url.
-do_git_update() {
-  echo
-  if [ -d "$1" ]
+# If an xPack is not present, clone it.
+# $1 = project name
+# $2 = author is (like "ilg")
+# $3 = project url
+do_install_xpack() {
+  if [ $# -lt 3 ]
   then
-    echo "Checking '$1'..."
-    (cd "$1"; git pull)
-  else
-    git clone "$2" "$1"
+    echo "do_install_xpack() requires 3 params"
+    exit 1
   fi
-  (cd "$1"; git branch)
-}
 
-# Update a single µOS++ xpack.
-# $1 = GitHub project name.
-do_update_micro_os_plus() {
-  do_git_update "${xpacks_repo_folder}/ilg/$1.git" "https://github.com/micro-os-plus/$1.git"
-}
-
-# Update a single third party xPack.
-# $1 = GitHub project name.
-do_update_xpacks() {
-  do_git_update "${xpacks_repo_folder}/ilg/$1.git" "https://github.com/xpacks/$1.git"
+  local dst=${xpacks_repo_folder}/$2/$1.git
+  echo "Checking '$1'..."
+  if [ ! -d "${dst}" ]
+  then
+    git clone "${dst}" "$3"
+    (cd "${dst}"; git branch)
+  fi
 }
 
 # -----------------------------------------------------------------------------
@@ -117,6 +110,7 @@ do_remove_dest() {
 
   if [ -d "${generated_folder}" ]
   then
+    echo
     echo "Removing '${generated_folder}'..."
 
     chmod -R +w "${generated_folder}"
@@ -174,22 +168,6 @@ do_prepare_dest() {
 # $1 = git path
 do_select_pack_folder() {
   pack_folder="${xpacks_repo_folder}/$1"
-}
-
-# $1 = GitHub project name.
-do_check_micro_os_plus() {
-  if [[ ! -d "${pack_folder}" ]]
-  then
-    do_update_micro_os_plus $1
-  fi
-}
-
-# $1 = GitHub project name.
-do_check_xpacks() {
-  if [[ ! -d "${pack_folder}" ]]
-  then
-    do_update_xpacks $1
-  fi
 }
 
 do_set_cube_folder() {
@@ -453,7 +431,6 @@ do_add_stm32_cmsis_xpack() {
   do_tell_xpack "${pack_name}-xpack"
 
   do_select_pack_folder "ilg/${pack_name}.git"
-  do_check_xpacks "${pack_name}"
 
   do_prepare_dest "${pack_name}/include/${device}"
   do_add_content "${pack_folder}/Drivers/CMSIS/Device/ST/STM32${family_uc}xx/Include/cmsis_device.h" 
@@ -476,7 +453,6 @@ do_add_stm32_cmsis_driver_xpack() {
   do_tell_xpack "${pack_name}-xpack"
 
   do_select_pack_folder "ilg/${pack_name}.git"
-  do_check_xpacks "${pack_name}"
 
   do_prepare_dest "${pack_name}/src/driver"
   do_add_content "${pack_folder}/CMSIS/Driver/"* 
@@ -497,7 +473,6 @@ do_add_stm32_hal_xpack() {
   do_tell_xpack "${pack_name}-xpack"
 
   do_select_pack_folder "ilg/${pack_name}.git"
-  do_check_xpacks "${pack_name}"
 
   do_prepare_dest "${pack_name}/include"
   do_add_content "${pack_folder}/Drivers/STM32${family_uc}xx_HAL_Driver/Inc"/* 
