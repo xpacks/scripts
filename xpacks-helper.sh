@@ -8,12 +8,16 @@
 
 # Include all 'xpacks-scripts.sh'
 source_tmp_file="$(mktemp)"
-find "$xpacks_repo_folder" -maxdepth 4 -type f -name 'xpacks-helper.sh' -print \
-| sed -e '/ilg\/scripts.git\/xpacks-helper.sh/d' \
-| sed -n -e '/scripts\/xpacks-helper.sh/p' \
-| sed -e 's/.*/source "&"/' > ${source_tmp_file}
-source "${source_tmp_file}"
-rm "${source_tmp_file}"
+
+do_source_distributes_scripts() {
+  find "$xpacks_repo_folder" -maxdepth 4 -type f -name 'xpacks-helper.sh' -print \
+    | sed -e '/ilg\/scripts.git\/xpacks-helper.sh/d' \
+    | sed -n -e '/scripts\/xpacks-helper.sh/p' \
+    | sed -e 's/.*/source "&"/' > ${source_tmp_file}
+
+  source "${source_tmp_file}"
+  rm "${source_tmp_file}"
+}
 
 do_process_args() {
   writable=""
