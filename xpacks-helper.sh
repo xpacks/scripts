@@ -124,7 +124,7 @@ do_remove_dest() {
 
 do_create_dest() {
   local file_name="NON_EDITABLE.txt"
-  mkdir -p "${generated_folder}"
+  mkdir -p ${verbose} "${generated_folder}"
   echo "This folder was automatically generated." >"${generated_folder}/${file_name}"
   if [ "$writable" != "y" ]
   then
@@ -166,7 +166,7 @@ do_prepare_dest() {
   dest_folder="${generated_folder}/$1"
 
   echo "Creating '${dest_folder}'..."
-  mkdir -p "${dest_folder}"
+  mkdir -p ${verbose} "${dest_folder}"
 }
 
 # $1 = git path
@@ -198,7 +198,7 @@ do_add_content() {
       cd "$1"
 
       # Create all intermediate folders 
-      find . -type d -exec mkdir -pv "${dest}"/{} \;
+      find . -type d -exec mkdir -p ${verbose} "${dest}"/{} \;
 
       if [ "${link}" == "y" ]
       then
@@ -422,5 +422,3 @@ rm "${TMP_FILE}"
 }
 
 # -----------------------------------------------------------------------------
-# -----------------------------------------------------------------------------
-
