@@ -9,7 +9,8 @@
 # Include all 'xpacks-scripts.sh'
 source_tmp_file="$(mktemp)"
 
-do_source_distributes_scripts() {
+# DEPRECATED (the source command is done inside do_install_xpack())
+_do_source_distributed_scripts() {
   find "$xpacks_repo_folder" -maxdepth 4 -type f -name 'xpacks-helper.sh' -print \
     | sed -e '/ilg\/scripts.git\/xpacks-helper.sh/d' \
     | sed -n -e '/scripts\/xpacks-helper.sh/p' \
@@ -87,6 +88,11 @@ do_install_xpack() {
   then
     git clone "$3" "${dst}"
     (cd "${dst}"; git branch)
+  fi
+
+  if [ -f "${dst}/scripts/xpacks-helper.sh" ]
+  then
+    source "${dst}/scripts/xpacks-helper.sh"
   fi
 }
 
