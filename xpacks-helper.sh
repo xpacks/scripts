@@ -116,7 +116,8 @@ do_load_repo() {
 }
 
 do_remove_dest() {
-  generated_folder="$(dirname $(dirname ${script}))/generated"
+  generated_orig_folder="$(dirname $(dirname ${script}))/generated"
+  generated_folder="${generated_orig_folder}.tmp"
 
   if [ -d "${generated_folder}" ]
   then
@@ -157,6 +158,18 @@ do_list() {
 }
 
 do_done() {
+
+  # Remove original generated folder.
+  if [ -d "${generated_orig_folder}" ]
+  then
+    rm -rf "${generated_orig_folder}"
+  fi
+
+  # Rename the generated.net -> generated.
+  echo
+  echo Renaming $(basename "${generated_folder}") "->" $(basename "${generated_orig_folder}")...
+  mv "${generated_folder}" "${generated_orig_folder}"
+
   echo
   echo "Done."
 }
