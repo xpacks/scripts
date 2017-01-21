@@ -144,11 +144,11 @@ do_protect() {
   then
     echo
     echo "Changing mode to R/W..."
-    chmod -R +w "${generated_folder}"
+    chmod -R +w "${generated_folder}"/*
   else
     echo
     echo "Changing mode to R/O..."
-    chmod -R -w "${generated_folder}"
+    chmod -R -w "${generated_folder}"/*
   fi
 }
 
