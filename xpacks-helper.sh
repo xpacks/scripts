@@ -162,6 +162,7 @@ do_done() {
   # Remove original generated folder.
   if [ -d "${generated_orig_folder}" ]
   then
+    chmod -R +w "${generated_orig_folder}"/*
     rm -rf "${generated_orig_folder}"
   fi
 
