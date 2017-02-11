@@ -95,7 +95,8 @@ do_install_xpack() {
   echo "Checking '$1'..."
   if [ ! -d "${dst}" ]
   then
-    if [ \( ! -z "${branch}" \) -a \( ls-remote --heads --exit-code --quiet  "${branch}" > /dev/null \)]
+    # Quotes around "${branch}" are mandatory, otherwise will match always.
+    if ls-remote --heads --exit-code --quiet "${branch}" > /dev/null 
     then
       git clone --branch "${branch}" "${url}" "${dst}"
     else
