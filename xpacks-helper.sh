@@ -25,6 +25,7 @@ do_process_args() {
   verbose=""
   link=""
   symlink=""
+  branch=""
 
   while [ $# -gt 0 ]
   do
@@ -52,6 +53,12 @@ do_process_args() {
         verbose="-v"
         shift 1
         ;;
+
+      --develop)
+        branch="develop"
+        shift 1
+        ;;
+
 
       --help)
         echo "Update xPacks."
@@ -82,14 +89,23 @@ do_install_xpack() {
     exit 1
   fi
 
+  local url="$3"
+
   local dst=${xpacks_repo_folder}/$2/$1.git
   echo "Checking '$1'..."
   if [ ! -d "${dst}" ]
   then
-    git clone "$3" "${dst}"
+    if [ \( ! -z "${branch}" \) -a \( ls-remote --heads --exit-code --quiet  "${branch}" > /dev/null \)]
+    then
+      git clone --branch "${branch}" "${url}" "${dst}"
+    else
+      git clone "${url}" "${dst}"
+    fi
     (cd "${dst}"; git branch)
   fi
 
+  # If the cloned repo has a helper script, include its functions
+  # to the current shell environment, to be used by the generate script.
   if [ -f "${dst}/scripts/xpacks-helper.sh" ]
   then
     source "${dst}/scripts/xpacks-helper.sh"
