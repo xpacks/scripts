@@ -96,7 +96,7 @@ do_install_xpack() {
   if [ ! -d "${dst}" ]
   then
     # Quotes around "${branch}" are mandatory, otherwise will match always.
-    if git ls-remote --heads --exit-code --quiet "${branch}" > /dev/null 
+    if git ls-remote --heads --exit-code --quiet "${url}" "${branch}" > /dev/null 
     then
       git clone --branch "${branch}" "${url}" "${dst}"
     else
