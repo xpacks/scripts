@@ -46,7 +46,7 @@ git pull
 EOF
 
 # Iterate all folders that look like a git repo.
-find "$xpacks_repo_folder" -type d -name '.git' -maxdepth 3 \
+find "$xpacks_repo_folder" -maxdepth 3 -type d -name '.git' \
 -exec bash "${tmp_file}" {} \;
 
 rm "${tmp_file}"
