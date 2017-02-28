@@ -207,7 +207,7 @@ do_list() {
 do_done() {
 
   # Remove original xpacks folder.
-  if [ -d "${local_xpacks_folder}" ]
+  if [ -d "${local_xpacks_orig_folder}" ]
   then
     if [ ! -n "$(find ${local_xpacks_orig_folder} -prune -empty)" ]
     then
