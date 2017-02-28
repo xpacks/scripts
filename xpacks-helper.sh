@@ -74,6 +74,30 @@ do_process_args() {
         ;;
     esac
   done
+
+  local_xpacks_orig_folder="$(dirname $(dirname ${script}))/xpacks"
+  local_xpacks_folder="${local_xpacks_orig_folder}.tmp"
+
+  if [ -d "${local_xpacks_folder}" ]
+  then
+    echo
+    echo "Removing '${local_xpacks_folder}'..."
+
+    chmod -R +w "${local_xpacks_folder}"
+    rm -rf "${local_xpacks_folder}"
+  fi
+
+  mkdir -p ${verbose} "${local_xpacks_folder}"
+  local file_name="NON_EDITABLE.txt"
+  mkdir -p ${verbose} "${local_xpacks_folder}"
+  echo "This folder was automatically generated." >"${local_xpacks_folder}/${file_name}"
+  echo "It contains links to all xPacks used within this project." >>"${local_xpacks_folder}/${file_name}"
+  echo "Except Git projects, all other should normally be read-only." >>"${local_xpacks_folder}/${file_name}"
+  echo "Prefereably do not use them directly, but prepare a nice 'generated' folder." >>"${local_xpacks_folder}/${file_name}"
+
+  generated_orig_folder="$(dirname $(dirname ${script}))/generated"
+  generated_folder="${generated_orig_folder}.tmp"
+
 }
 
 # -----------------------------------------------------------------------------
@@ -105,6 +129,15 @@ do_install_xpack() {
     (cd "${dst}"; git branch)
   fi
 
+  mkdir -p "${local_xpacks_folder}/$2"
+  if [ \( "${host_uname}" == "Darwin" \) -o \( "${host_uname}" == "Linux" \) ]
+  then
+    ln -s ${verbose} "${dst}" "${local_xpacks_folder}/$2/$1"
+  else
+    # No symbolic links on Windows.
+    ln ${verbose} "${dst}" "${local_xpacks_folder}/$2/$1"
+  fi
+
   # If the cloned repo has a helper script, include its functions
   # to the current shell environment, to be used by the generate script.
   if [ -f "${dst}/scripts/xpacks-helper.sh" ]
@@ -133,9 +166,6 @@ do_load_repo() {
 }
 
 do_remove_dest() {
-  generated_orig_folder="$(dirname $(dirname ${script}))/generated"
-  generated_folder="${generated_orig_folder}.tmp"
-
   if [ -d "${generated_folder}" ]
   then
     echo
@@ -176,14 +206,32 @@ do_list() {
 
 do_done() {
 
+  # Remove original xpacks folder.
+  if [ -d "${local_xpacks_folder}" ]
+  then
+    if [ ! -n "$(find ${local_xpacks_orig_folder} -prune -empty)" ]
+    then
+      chmod -R +w "${local_xpacks_orig_folder}"/*
+    fi
+    rm -r -f "${local_xpacks_orig_folder}"
+  fi
+
+  # Rename the xpacks.net -> xpacks.
+  echo
+  echo Renaming $(basename "${local_xpacks_folder}") "->" $(basename "${local_xpacks_orig_folder}")...
+  mv "${local_xpacks_folder}" "${local_xpacks_orig_folder}"
+
   # Remove original generated folder.
   if [ -d "${generated_orig_folder}" ]
   then
-    chmod -R +w "${generated_orig_folder}"/*
-    rm -rf "${generated_orig_folder}"
+    if [ ! -n "$(find ${generated_orig_folder} -prune -empty)" ]
+    then
+      chmod -R +w "${generated_orig_folder}"/*
+    fi
+    rm -r -f "${generated_orig_folder}"
   fi
 
-  # Rename the generated.net -> generated.
+  # Rename the generated.tmp -> generated.
   echo
   echo Renaming $(basename "${generated_folder}") "->" $(basename "${generated_orig_folder}")...
   mv "${generated_folder}" "${generated_orig_folder}"
