@@ -6,9 +6,7 @@ IFS=$'\n\t'
 # Bash script to load the scripts.git project.
 # -----------------------------------------------------------------------------
 
-# Prefer the environment location XPACKS_FOLDER, if defined,
-# but default to '.xpacks'.
-xpacks_repo_folder="${XPACKS_REPO_FOLDER:-$HOME/.xpacks}"
+# xpacks_repo_folder must be set by including bootstrap-paths.sh before.
 
 # -----------------------------------------------------------------------------
 
