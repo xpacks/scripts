@@ -6,6 +6,16 @@
 # Bash helper script used in project generate.sh scripts.
 # -----------------------------------------------------------------------------
 
+# Get the full absolute path of the current script.
+script=$0
+if [[ "${script}" != /* ]]
+then
+  # Make relative path absolute.
+  script=$(pwd)/$0
+fi
+
+# -----------------------------------------------------------------------------
+
 # Include all 'xpacks-scripts.sh'
 source_tmp_file="$(mktemp)"
 
