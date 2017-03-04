@@ -41,5 +41,3 @@ fi
 
 # Include common definitions from the helper script.
 source "${xpacks_helper_path}"
-
-
