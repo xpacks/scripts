@@ -263,10 +263,13 @@ do_tell_xpack() {
 # $1 = xpack name
 do_prepare_dest() {
 
-  dest_folder="${generated_folder_path}/$1"
+  dest_folder_path="${generated_folder_path}/$1"
+
+  # Legacy definition.
+  dest_folder="${dest_folder_path}"
 
   echo "Creating '$1'..."
-  mkdir -p ${verbose} "${dest_folder}"
+  mkdir -p ${verbose} "${dest_folder_path}"
 }
 
 # $1 = git path
@@ -286,7 +289,7 @@ do_add_content() {
 
   while [ $# -ge 1 ]
   do 
-    local dst_folder_path="${dest_folder}/$(basename $1)"
+    local dst_folder_path="${dest_folder_path}/$(basename $1)"
 
     if [ -f "$1" ]
     then
