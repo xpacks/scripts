@@ -12,7 +12,7 @@ elif [ "${host_uname}" == "Linux" ]
 then
   xpacks_repo_folder_path="${XPACKS_REPO_FOLDER:-$HOME/.xpacks}"
   xpacks_cache_folder_path="${XPACKS_CACHE_FOLDER:-$HOME/.cache/xpacks}"
-elif [ "${host_uname:0:6}" == "MINGW64" ]
+elif [ "${host_uname:0:7}" == "MINGW64" ]
 then
   xpacks_repo_folder_path="${XPACKS_REPO_FOLDER:-$HOME/AppData/Roaming/xPacks}"
   xpacks_cache_folder_path="${XPACKS_CACHE_FOLDER:-$HOME/AppData/Local/Caches/xPacks}"
