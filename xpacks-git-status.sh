@@ -9,7 +9,7 @@ IFS=$'\n\t'
 
 # Prefer the environment location XPACKS_FOLDER, if defined,
 # but default to '.xpacks'.
-xpacks_repo_folder="${XPACKS_REPO_FOLDER:-$HOME/.xpacks}"
+xpacks_repo_folder="${XPACKS_REPO_FOLDER:-$HOME/Library/xPacks}"
 
 # -----------------------------------------------------------------------------
 

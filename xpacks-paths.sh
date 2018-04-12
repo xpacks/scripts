@@ -26,10 +26,12 @@ export xpacks_cache_folder_path
 
 # -----------------------------------------------------------------------------
 
-xpacks_helper_path="${xpacks_repo_folder_path}/ilg/scripts.git/xpacks-helper.sh"
+# The generate.sh scripts do not define the helper, so enter it as default.
+helper_file_name="${helper_file_name:-xpacks-helper.sh}"
+helper_path="${xpacks_repo_folder_path}/ilg/scripts.git/${helper_file_name}"
 
 # Check if the helper is present.
-if [ ! -f "${xpacks_helper_path}" ]
+if [ ! -f "${helper_path}" ]
 then
   mkdir -p "${HOME}/Downloads"
   echo "Downloading bootstrap.sh..."
@@ -40,4 +42,4 @@ fi
 # -----------------------------------------------------------------------------
 
 # Include common definitions from the helper script.
-source "${xpacks_helper_path}"
+source "${helper_path}"
