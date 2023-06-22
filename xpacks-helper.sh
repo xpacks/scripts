@@ -117,7 +117,7 @@ do_install_xpack() {
   if [ ! -d "${dst_folder_path}" ]
   then
     # Quotes around "${branch}" are mandatory, otherwise will match always.
-    if git ls-remote --heads --exit-code --quiet "${url}" "${branch}" > /dev/null 
+    if git ls-remote --heads --exit-code --quiet "${url}" "${branch}" > /dev/null
     then
       git clone --branch "${branch}" "${url}" "${dst_folder_path}"
     else
@@ -288,7 +288,7 @@ do_set_cube_folder() {
 do_add_content() {
 
   while [ $# -ge 1 ]
-  do 
+  do
     local dst_folder_path="${dest_folder_path}/$(basename $1)"
 
     if [ -f "$1" ]
@@ -303,7 +303,7 @@ do_add_content() {
     then
       cd "$1"
 
-      # Create all intermediate folders 
+      # Create all intermediate folders
       find . -type d -exec mkdir -p ${verbose} "${dst_folder_path}"/{} \;
 
       if [ "${link}" == "y" ]
