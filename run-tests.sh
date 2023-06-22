@@ -2,9 +2,19 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# 
-# Copyright (c) 2015 Liviu Ionescu.
-# This file is part of the xPacks project (https://xpacks.github.io).
+#
+# This file is part of the µOS++ distribution.
+#   (https://github.com/micro-os-plus)
+# Copyright (c) 2015-2023 Liviu Ionescu.  All rights reserved.
+#
+# Permission to use, copy, modify, and/or distribute this software
+# for any purpose is hereby granted, under the terms of the MIT license.
+#
+# If a copy of the license was not distributed with this file, it can
+# be obtained from https://opensource.org/licenses/mit/.
+#
+# -----------------------------------------------------------------------------
+
 #
 # Script to run all tests in the current package.
 #
@@ -26,7 +36,7 @@ function run_test {
     echo
     echo "Testing \"$1\"..."
     TEST_FOLDER="${TEST_SUBFOLDER}/$1"
-    
+
     mkdir -p "${TEST_FOLDER}"
     cp $2/* "${TEST_FOLDER}"
     for f in "${PROJECT_FOLDER}/test/"*.mk "${PROJECT_FOLDER}/tests/"*.mk
@@ -36,10 +46,10 @@ function run_test {
         cp "$f" "${TEST_FOLDER}"
       fi
 	done
-	
+
     # If the test folder has a 'makefile', run it.
     make --directory="${TEST_FOLDER}" PARENT="${PROJECT_FOLDER}" TEST_NAME="$1" all
-  
+
     echo
     echo "Testing \"$1\" done."
 }
